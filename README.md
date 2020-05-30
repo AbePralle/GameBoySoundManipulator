@@ -2,7 +2,7 @@
 A GameBoy Color ROM that provides on-device/on-emulator sound parameter editing.
 
 ## Version
-- v1.0.1 - May 30, 2020
+- v1.1 - May 30, 2020
 - [MIT License](LICENSE)
 - By Abe Pralle
 
@@ -18,5 +18,13 @@ A GameBoy Color ROM that provides on-device/on-emulator sound parameter editing.
 3. Run `rogo` to build the ROM from source using RGBDS.
 
 ## Usage
-If you are programming Game Boy or Game Boy Color, Game Boy Sound Manipulator (AKA GBSound) lets you adjust sound parameters with immediate feedback. Once you have dialed in a sound you like, copying the sound's bytes to the appropriate Game Boy memory location will play that sound. For example, in the screen below you would copy bytes `02 00 F2 00 C1` to locations `FF10-FF14`.
+If you are programming Game Boy or Game Boy Color, Game Boy Sound Manipulator (AKA GBSound) lets you adjust sound parameters with immediate feedback. Once you have dialed in a sound you like, copy the sound's bytes to the appropriate Game Boy registers to play that sound. For example, for the screen below you would copy bytes `00 80 F0 00 C1` to locations `FF10-FF14`.
+
+![Sound1](Media/GBSound-1.png)
+
+## History
+Version | Date          | Description
+--------|---------------|------------------------------------------------------------------------------------------
+v1.0    | March 6, 2000 | Original version.
+v1.1    | May 30, 2020  | Updated for modern RGBDS assembler, added GBC register info, and released as open source.
 
