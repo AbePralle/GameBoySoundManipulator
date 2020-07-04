@@ -26,15 +26,15 @@ routine rogo_build
   File.create_folder( "Build" )
 
   local obj_files = String[]
-  forEach (asm_file in File.listing("Source/***/*.asm"))
+  forEach (asm_file in File.listing("Source/**/*.asm"))
     local obj_file = "Build/$.obj" (File.filename(asm_file).leftmost(-4))
     execute "rgbasm     $ -o $" (asm_file,obj_file)
     obj_files.add( obj_file )
   endForEach
 
   local rom_name = Build.ROM_NAME
-  execute "rgblink    $ -o Build/$" (obj_files.join(" "),rom_name)
-  execute "rgbfix  -v Build/$" (rom_name)
+  execute "rgblink   $ -o Build/$" (obj_files.join(" "),rom_name)
+  execute "rgbfix -p 0 -v Build/$" (rom_name)
 
   local file_size = File.size( "ROM/" + rom_name )
   println "> Copy Build/$ -> ROM/$ ($ bytes)" (rom_name,rom_name,file_size.format(","))
