@@ -1,12 +1,15 @@
 # Game Boy Sound Manipulator
 A GameBoy Color ROM that provides on-device/on-emulator sound parameter editing.
 
-## Version
-- v1.1 - May 30, 2020
-- [MIT License](LICENSE)
-- By Abe Pralle
+About         | Current Release
+--------------|-----------------------
+Version       | 1.1.1
+Date          | 2022.01.08
+Target        | Game Boy Color
+Build         | macOS, Windows, Linux
+License       | [MIT License](LICENSE)
 
-![GBSound](Media/GBSound.gif)
+<p align="center"><img src="Media/GBSound.gif"></p>
 
 ## ROM
 - A compiled ROM is included: [ROM/GBSound.gb](ROM/GBSound.gb).
@@ -23,8 +26,9 @@ If you are programming Game Boy or Game Boy Color, Game Boy Sound Manipulator (A
 ![Sound1](Media/GBSound-1.png)
 
 ## History
-Version | Date          | Description
---------|---------------|------------------------------------------------------------------------------------------
-v1.0    | March 6, 2000 | Original version.
-v1.1    | May 30, 2020  | Updated for modern RGBDS assembler, added GBC register info, and released as open source.
+Version | Date             | Description
+--------|------------------|------------------------------------------------------------------------------------------
+v1.0    | March 6, 2000    | Original freeware version (compiled ROM only).
+v1.1    | May 30, 2020     | Updated for modern RGBDS assembler, added GBC register info, and released as open source.
+v1.1.1  | January 8, 2021  | Updated for latest RGBDS assembler.
 

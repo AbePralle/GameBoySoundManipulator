@@ -2,7 +2,7 @@
 ; GBSound.asm
 ; 2000.03.06 by Abe Pralle
 ;===============================================================================
-PRINT:  MACRO
+MPRINT: MACRO
         push    bc
         ld      a,\4
         ld      [textColor],a
@@ -536,7 +536,7 @@ PrintTextCommon:
         ld      b,h   ;b is high byte, bc is 16 bit offset
 
         ld      hl,backBuffer
-        add     bc    ;hl now points to backbuffer
+        add     hl,bc ;hl now points to backbuffer
 
         ;copy the tile indicies
 .loop   ld      a,[de]      ;get a character
@@ -750,17 +750,17 @@ WaitKey:
 ShowInfo:
         call    ClearScreen
 
-        PRINT   .introText1,0,0,1
-        PRINT   .introText2,0,1,1
-        PRINT   .introText2_1,0,2,0
-        PRINT   .introText3,0,4,0
-        PRINT   .introText4,0,5,0
-        PRINT   .introText5,0,7,0
-        PRINT   .introText6,0,10,1
-        PRINT   .introText7,0,11,1
-        PRINT   .introText8,0,12,1
-        PRINT   .introText9,0,16,0
-        PRINT   .introText10,0,17,0
+        MPRINT  .introText1,0,0,1
+        MPRINT  .introText2,0,1,1
+        MPRINT  .introText2_1,0,2,0
+        MPRINT  .introText3,0,4,0
+        MPRINT  .introText4,0,5,0
+        MPRINT  .introText5,0,7,0
+        MPRINT  .introText6,0,10,1
+        MPRINT  .introText7,0,11,1
+        MPRINT  .introText8,0,12,1
+        MPRINT  .introText9,0,16,0
+        MPRINT  .introText10,0,17,0
         UPDATESCREEN
 
         ld      a,BUTTON_ALL
@@ -769,8 +769,8 @@ ShowInfo:
 
 .introText1      DB      "   GameBoy Sound    ",0
 .introText2      DB      "    Manipulator     ",0
-.introText2_1    DB      "       v1.1         ",0
-.introText3      DB "   ",15,"2020.05.30 by   ",0
+.introText2_1    DB      "       v1.1.1       ",0
+.introText3      DB "   ",15,"2022.01.08 by   ",0
 .introText4      DB      "Abe.Pralle@gmail.com",0
 .introText5      DB      "                    ",0
 .introText6      DB      "SELECT = change type",0
@@ -786,8 +786,8 @@ ShowInfo:
 ;---------------------------------------------------------------------
 OnState1:
         call    ClearScreen
-        PRINT   .state1Text1,0,0,1
-        PRINT   .state1Text2,0,16,2
+        MPRINT  .state1Text1,0,0,1
+        MPRINT  .state1Text2,0,16,2
 
         xor     a
         ld      [cursor_x],a
@@ -1005,8 +1005,8 @@ OnState1:
 ;---------------------------------------------------------------------
 OnState2:
         call    ClearScreen
-        PRINT   .state2Text1,0,0,1
-        PRINT   .state2Text2,0,16,2
+        MPRINT  .state2Text1,0,0,1
+        MPRINT  .state2Text2,0,16,2
 
         xor     a
         ld      [cursor_x],a
@@ -1179,8 +1179,8 @@ OnState2:
 ;---------------------------------------------------------------------
 OnState3:
         call    ClearScreen
-        PRINT   .state3Text1,0,0,1
-        PRINT   .state3Text2,0,16,2
+        MPRINT  .state3Text1,0,0,1
+        MPRINT  .state3Text2,0,16,2
 
         xor     a
         ld      [cursor_x],a
@@ -1247,8 +1247,8 @@ OnState3:
         jr      nz,.loop3
 
         ;draw the graphic waveform box
-        PRINT   .state3BoxTop,16,5,3
-        PRINT   .state3BoxBottom,16,6,3
+        MPRINT  .state3BoxTop,16,5,3
+        MPRINT  .state3BoxBottom,16,6,3
 
         ;what is the cursor highlighting?
         ld      a,[curByte]
@@ -1558,8 +1558,8 @@ TestWaveButtonB:
 ;---------------------------------------------------------------------
 OnState4:
         call    ClearScreen
-        PRINT   .state4Text1,0,0,1
-        PRINT   .state4Text2,0,16,2
+        MPRINT  .state4Text1,0,0,1
+        MPRINT  .state4Text2,0,16,2
 
         xor     a
         ld      [cursor_x],a
@@ -1856,7 +1856,7 @@ DrawBinary:
         ld      a,[curByteMask]
         ld      d,a     ;save mask for later
 
-        PRINT   .percent,0,3,0
+        MPRINT  .percent,0,3,0
 
         ld      c,8     ;draw 8 bits
 
@@ -2212,7 +2212,7 @@ PrintInfo:
         push    hl
 
         call    .printInfoBody
-        PRINT   .selectString,0,17,2
+        MPRINT  .selectString,0,17,2
 
         pop     hl
         pop     de
@@ -2226,24 +2226,24 @@ PrintInfo:
         jr      z,.print0
         jp      .check1
 .print0
-        PRINT   .t0_1,0,5,1
-        PRINT   .t0_2,0,6,2
-        PRINT   .t0_3,0,7,2
-        PRINT   .t0_4,0,8,2
-        PRINT   .t0_5,0,9,2
-        PRINT   .t0_6,0,10,2
-        PRINT   .t0_7,0,11,2
-        PRINT   .t0_8,0,12,2
-        PRINT   .t0_9,0,13,2
+        MPRINT  .t0_1,0,5,1
+        MPRINT  .t0_2,0,6,2
+        MPRINT  .t0_3,0,7,2
+        MPRINT  .t0_4,0,8,2
+        MPRINT  .t0_5,0,9,2
+        MPRINT  .t0_6,0,10,2
+        MPRINT  .t0_7,0,11,2
+        MPRINT  .t0_8,0,12,2
+        MPRINT  .t0_9,0,13,2
         ret
 
 
 .check1
         cp      1
         jr      nz,.check2
-        PRINT   .t1_1,0,5,1
-        PRINT   .t1_2,0,6,2
-        PRINT   .t1_3,0,7,2
+        MPRINT  .t1_1,0,5,1
+        MPRINT  .t1_2,0,6,2
+        MPRINT  .t1_3,0,7,2
         ret
 
 
@@ -2251,102 +2251,102 @@ PrintInfo:
         cp      2
         jr      nz,.check3
 
-        PRINT   .t2_1,0,5,1
-        PRINT   .t2_2,0,6,2
-        PRINT   .t2_3,0,7,2
-        PRINT   .t2_4,0,8,2
+        MPRINT  .t2_1,0,5,1
+        MPRINT  .t2_2,0,6,2
+        MPRINT  .t2_3,0,7,2
+        MPRINT  .t2_4,0,8,2
         ret
 
 
 .check3
         cp      3
         jr      nz,.check4
-        PRINT   .t3_1,0,5,1
-        PRINT   .t3_2,0,6,2
-        PRINT   .t3_3,0,7,2
-        PRINT   .t3_4,0,8,2
-        PRINT   .t3_5,0,9,2
+        MPRINT  .t3_1,0,5,1
+        MPRINT  .t3_2,0,6,2
+        MPRINT  .t3_3,0,7,2
+        MPRINT  .t3_4,0,8,2
+        MPRINT  .t3_5,0,9,2
         ret
 
 
 .check4
         cp      4
         jr      nz,.check5
-        PRINT   .t4_1,0,5,1
-        PRINT   .t4_2,0,6,2
-        PRINT   .t4_3,0,8,2
-        PRINT   .t4_4,0,9,2
+        MPRINT  .t4_1,0,5,1
+        MPRINT  .t4_2,0,6,2
+        MPRINT  .t4_3,0,8,2
+        MPRINT  .t4_4,0,9,2
         ret
 
 
 .check5
         cp      5
         jr      nz,.check6
-        PRINT   .t5_1,0,5,1
-        PRINT   .t5_2,0,6,2
-        PRINT   .t5_3,0,7,2
+        MPRINT  .t5_1,0,5,1
+        MPRINT  .t5_2,0,6,2
+        MPRINT  .t5_3,0,7,2
         ret
 
 
 .check6
         cp      6
         jr      nz,.check7
-        PRINT   .t6_1,0,5,1
-        PRINT   .t6_2,0,6,2
-        PRINT   .t6_3,0,7,2
+        MPRINT  .t6_1,0,5,1
+        MPRINT  .t6_2,0,6,2
+        MPRINT  .t6_3,0,7,2
         ret
 
 
 .check7
         cp      7
         jr      nz,.check8
-        PRINT   .t7_1,0,5,1
-        PRINT   .t7_2,0,6,2
-        PRINT   .t7_3,0,7,2
-        PRINT   .t7_4,0,8,2
-        PRINT   .t7_5,0,9,2
+        MPRINT  .t7_1,0,5,1
+        MPRINT  .t7_2,0,6,2
+        MPRINT  .t7_3,0,7,2
+        MPRINT  .t7_4,0,8,2
+        MPRINT  .t7_5,0,9,2
         ret
 
 
 .check8
         cp      8
         jr      nz,.check9
-        PRINT   .t8_1,0,5,1
-        PRINT   .t8_2,0,6,2
-        PRINT   .t8_3,0,7,2
-        PRINT   .t8_4,0,9,2
-        PRINT   .t8_5,0,10,2
+        MPRINT  .t8_1,0,5,1
+        MPRINT  .t8_2,0,6,2
+        MPRINT  .t8_3,0,7,2
+        MPRINT  .t8_4,0,9,2
+        MPRINT  .t8_5,0,10,2
         ret
 
 
 .check9
         cp      9
         jr      nz,.check10
-        PRINT   .t9_1,0,5,1
-        PRINT   .t9_2,0,6,2
-        PRINT   .t9_3,0,7,2
-        PRINT   .t9_4,0,9,2
-        PRINT   .t9_5,0,10,2
+        MPRINT  .t9_1,0,5,1
+        MPRINT  .t9_2,0,6,2
+        MPRINT  .t9_3,0,7,2
+        MPRINT  .t9_4,0,9,2
+        MPRINT  .t9_5,0,10,2
         ret
 
 
 .check10
         cp      10
         jr      nz,.check11
-        PRINT   .t10_1,0,5,1
-        PRINT   .t10_2,0,6,2
-        PRINT   .t10_3,0,7,2
+        MPRINT  .t10_1,0,5,1
+        MPRINT  .t10_2,0,6,2
+        MPRINT  .t10_3,0,7,2
         ret
 
 
 .check11
         cp      11
         jr      nz,.check12
-        PRINT   .t11_1,0,5,1
-        PRINT   .t11_2,0,6,2
-        PRINT   .t11_3,0,7,2
-        PRINT   .t11_4,0,9,2
-        PRINT   .t11_5,0,10,2
+        MPRINT  .t11_1,0,5,1
+        MPRINT  .t11_2,0,6,2
+        MPRINT  .t11_3,0,7,2
+        MPRINT  .t11_4,0,9,2
+        MPRINT  .t11_5,0,10,2
         ret
 
 .check12
@@ -2355,22 +2355,22 @@ PrintInfo:
         jp      .check13
 
 .print12
-        PRINT   .t12_1,0,5,1
-        PRINT   .t12_2,0,6,2
-        PRINT   .t12_3,0,7,2
-        PRINT   .t12_4,0,9,2
-        PRINT   .t12_5,0,10,2
-        PRINT   .t12_6,0,11,2
-        PRINT   .t12_7,0,12,2
-        PRINT   .t12_8,0,13,2
+        MPRINT  .t12_1,0,5,1
+        MPRINT  .t12_2,0,6,2
+        MPRINT  .t12_3,0,7,2
+        MPRINT  .t12_4,0,9,2
+        MPRINT  .t12_5,0,10,2
+        MPRINT  .t12_6,0,11,2
+        MPRINT  .t12_7,0,12,2
+        MPRINT  .t12_8,0,13,2
         ret
 
 .check13
         cp      13
         jr      nz,.check14
-        PRINT   .t13_1,0,5,1
-        PRINT   .t13_2,0,6,2
-        PRINT   .t13_3,0,7,2
+        MPRINT  .t13_1,0,5,1
+        MPRINT  .t13_2,0,6,2
+        MPRINT  .t13_3,0,7,2
         ret
 
 .check14
@@ -2378,93 +2378,93 @@ PrintInfo:
         jr      z,.print14
         jp      .check15
 .print14
-        PRINT   .t14_1,0,5,1
-        PRINT   .t14_2,0,6,2
-        PRINT   .t14_3,0,7,2
-        PRINT   .t14_4,0,8,2
-        PRINT   .t14_5,0,9,2
-        PRINT   .t14_6,0,10,2
-        PRINT   .t14_7,0,11,2
-        PRINT   .t14_8,0,12,2
-        PRINT   .t14_9,0,13,2
-        PRINT   .t14_10,0,14,2
+        MPRINT  .t14_1,0,5,1
+        MPRINT  .t14_2,0,6,2
+        MPRINT  .t14_3,0,7,2
+        MPRINT  .t14_4,0,8,2
+        MPRINT  .t14_5,0,9,2
+        MPRINT  .t14_6,0,10,2
+        MPRINT  .t14_7,0,11,2
+        MPRINT  .t14_8,0,12,2
+        MPRINT  .t14_9,0,13,2
+        MPRINT  .t14_10,0,14,2
         ret
 
 .check15
         cp      15
         jr      nz,.check16
-        PRINT   .t15_1,0,8,1
-        PRINT   .t15_2,0,9,2
-        PRINT   .t15_3,0,10,2
-        PRINT   .t15_4,0,11,2
-        PRINT   .t15_5,0,12,2
-        PRINT   .t15_6,0,13,2
+        MPRINT  .t15_1,0,8,1
+        MPRINT  .t15_2,0,9,2
+        MPRINT  .t15_3,0,10,2
+        MPRINT  .t15_4,0,11,2
+        MPRINT  .t15_5,0,12,2
+        MPRINT  .t15_6,0,13,2
         ret
 
 .check16
         cp      16
         jr      nz,.check17
-        PRINT   .t16_1,0,8,1
-        PRINT   .t16_2,0,9,2
-        PRINT   .t15_3,0,10,2
-        PRINT   .t15_4,0,11,2
-        PRINT   .t15_5,0,12,2
-        PRINT   .t15_6,0,13,2
+        MPRINT  .t16_1,0,8,1
+        MPRINT  .t16_2,0,9,2
+        MPRINT  .t15_3,0,10,2
+        MPRINT  .t15_4,0,11,2
+        MPRINT  .t15_5,0,12,2
+        MPRINT  .t15_6,0,13,2
         ret
 
 .check17
         cp      17
         jr      nz,.check18
-        PRINT   .t17_1,0,8,1
-        PRINT   .t17_2,0,9,2
-        PRINT   .t17_3,0,10,2
-        PRINT   .t17_4,0,11,2
-        PRINT   .t17_5,0,12,2
+        MPRINT  .t17_1,0,8,1
+        MPRINT  .t17_2,0,9,2
+        MPRINT  .t17_3,0,10,2
+        MPRINT  .t17_4,0,11,2
+        MPRINT  .t17_5,0,12,2
         ret
 
 .check18
         cp      18
         jr      nz,.check19
-        PRINT   .t8_1,0,8,1
-        PRINT   .t8_2,0,9,2
-        PRINT   .t8_3,0,10,2
-        PRINT   .t8_4,0,11,2
-        PRINT   .t8_5,0,12,2
+        MPRINT  .t8_1,0,8,1
+        MPRINT  .t8_2,0,9,2
+        MPRINT  .t8_3,0,10,2
+        MPRINT  .t8_4,0,11,2
+        MPRINT  .t8_5,0,12,2
         ret
 
 .check19
         cp      19
         jr      nz,.check20
-        PRINT   .t9_1,0,8,1
-        PRINT   .t9_2,0,9,2
-        PRINT   .t9_3,0,10,2
-        PRINT   .t9_4,0,11,2
-        PRINT   .t9_5,0,12,2
+        MPRINT  .t9_1,0,8,1
+        MPRINT  .t9_2,0,9,2
+        MPRINT  .t9_3,0,10,2
+        MPRINT  .t9_4,0,11,2
+        MPRINT  .t9_5,0,12,2
         ret
 
 .check20
         cp      20
         jr      nz,.check21
-        PRINT   .t10_1,0,8,1
-        PRINT   .t10_2,0,9,2
-        PRINT   .t10_3,0,10,2
+        MPRINT  .t10_1,0,8,1
+        MPRINT  .t10_2,0,9,2
+        MPRINT  .t10_3,0,10,2
         ret
 
 .check21
         cp      21
         jr      nz,.check22
-        PRINT   .t11_1,0,8,1
-        PRINT   .t11_2,0,9,2
-        PRINT   .t11_3,0,10,2
-        PRINT   .t11_4,0,11,2
-        PRINT   .t11_5,0,12,2
+        MPRINT  .t11_1,0,8,1
+        MPRINT  .t11_2,0,9,2
+        MPRINT  .t11_3,0,10,2
+        MPRINT  .t11_4,0,11,2
+        MPRINT  .t11_5,0,12,2
         ret
 
 .check22
-        PRINT   .t22_1,0,8,1
-        PRINT   .t22_2,0,9,2
-        PRINT   .t22_3,0,10,2
-        PRINT   .t22_4,0,11,2
+        MPRINT  .t22_1,0,8,1
+        MPRINT  .t22_2,0,9,2
+        MPRINT  .t22_3,0,10,2
+        MPRINT  .t22_4,0,11,2
         ret
 
 .t0_1   DB      "Sweep Time          ",0
@@ -2798,7 +2798,7 @@ PlotWaveForm:
 ; Description:  If cur y is more than 1 different from next y, plots
 ;               points in the waveform box to close that gap
 ;---------------------------------------------------------------------
-ExtendLineToNeighbor
+ExtendLineToNeighbor:
         push    bc
         push    de
         push    hl
