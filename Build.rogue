@@ -1,6 +1,6 @@
 # To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
 
-#$ LIBRARIES(macOS) = rgbds( which:rgbasm )
+#$ LIBRARIES(macOS) = rgbds( exe:rgbasm )
 
 # description()s are optional - Rogo uses introspection to determine which commands are available.
 # 'rogo help default' displays the description for "default", etc.
@@ -18,16 +18,16 @@ routine rogo_default
 endRoutine
 
 routine rogo_build
-  local rgbasm = System.find_program( "rgbasm" )
+  local rgbasm = System.find_executable( "rgbasm" )
   if (not rgbasm)
     throw Error( "Please install the RGBDS Game Boy assembler from https://github.com/rednex/rgbds" )
   endIf
 
-  File.create_folder( "Build" )
+  File( "Build" ).create_folder
 
   local obj_files = String[]
-  forEach (asm_file in File.listing("Source/**/*.asm"))
-    local obj_file = "Build/$.obj" (File.filename(asm_file).leftmost(-4))
+  forEach (asm_file in File("Source/**/*.asm").listing)
+    local obj_file = "Build/$.obj" (File(asm_file).filename.leftmost(-4))
     execute "rgbasm     $ -o $" (asm_file,obj_file)
     obj_files.add( obj_file )
   endForEach
@@ -36,10 +36,10 @@ routine rogo_build
   execute "rgblink   $ -o Build/$" (obj_files.join(" "),rom_name)
   execute "rgbfix -p 0 -v Build/$" (rom_name)
 
-  local file_size = File.size( "ROM/" + rom_name )
+  local file_size = File( "ROM/" + rom_name ).size
   println "> Copy Build/$ -> ROM/$ ($ bytes)" (rom_name,rom_name,file_size.format(","))
-  File.create_folder( "ROM" )
-  File.copy( "Build/"+rom_name, "ROM/"+rom_name )
+  File( "ROM" ).create_folder
+  File( "Build/"+rom_name ).copy_to( "ROM/"+rom_name )
 endRoutine
 
 routine rogo_clean
@@ -47,57 +47,77 @@ routine rogo_clean
 endRoutine
 
 routine verbose_delete( filepath:String )
-  if (File.exists(filepath))
+  if (File(filepath).exists)
     println "> Delete " + filepath
-    File.delete( filepath )
+    if (not File(filepath).delete)
+      println "*** Failed to delete - retrying with sudo"
+      local cmd = ''sudo rm -rf $'' (File(filepath).esc)
+      execute cmd
+    endIf
   endIf
 endRoutine
 
-routine execute( commands:String, &suppress_error )->Logical
+routine execute( commands:String, error_message=null:String, &suppress_error )->Logical
   forEach (cmd in LineReader(commands))
-    print( "> " ).println( cmd )
-    if (System.run(cmd) != 0)
-      if (suppress_error) return false
-      else                throw Error( "Build failed." )
+    print( "> " )
+    println( cmd )
+    if (0 != System.run(cmd))
+      if (suppress_error)
+        return false
+      else
+        if (not error_message) error_message = "Build failed."
+        throw Error( error_message )
+      endIf
     endIf
   endForEach
   return true
 endRoutine
 
-#------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # Introspection-based Launcher Framework
-#------------------------------------------------------------------------------
-# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
-# needed and then runs the build executable while forwarding any command line arguments. This file contains
-# a default framework which uses introspection to turn command line arguments into parameterized routine calls.
+#-------------------------------------------------------------------------------
+# Rogo is a "build your own build system" facilitator. At its core Rogo just
+# recompiles build files if needed and then runs the build executable while
+# forwarding any command line arguments. This file contains a default framework
+# which uses introspection to turn command line arguments into parameterized
+# routine calls.
 
-# Example: to handle the command "rogo abc xyz 5", define "routine rogo_abc_xyz( n:Int32 )".
+# Example: to handle the command "rogo abc xyz 5", define
+# "routine rogo_abc_xyz( n:Int32 )".
 
 # "rogo_default" will run in the absence of any other command line argument.
 
-# The following "comment directives" can be used in this file to control how RogueC compiles it and to
-# manage automatic dependency installation and linking.
+# The following "comment directives" can be used in this file to control how
+# RogueC compiles it and to manage automatic dependency installation and
+# linking.
 
-# Each of the following should be on a line beginning with the characters #$ (preceding whitespace is fine).
-# Sample args are given.
+# Each of the following should be on a line beginning with the characters #$
+# (preceding whitespace is fine). Sample args are given.
 
-#   ROGUEC       = roguec       # Path to roguec compiler to compile this file with
+#   ROGUEC       = roguec       # Path to roguec to compile this file with
 #   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
-#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof   # C++ compiler path and/or invocation
-#   CPP_ARGS     = -a -b -c          # Additional C++ args
-#   LINK         = true              # Links following LIBRARIES with this Build file
-#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes these additional flags
-#   LINK         = false             # Linking turned off for following LIBRARIES - info can still be obtained from #$LIBRARY_FLAGS()
-#   LINK(macOS)  = ...               # Options applying only to System.os=="macOS" (use with any OS and any comment directive)
+#   CC           = gcc -Wall -fno-strict-aliasing
+#   CC_ARGS      = -a -b -c          # Additional C args
+#   LINK         = -lalpha -lbeta    # Link this build file with these options
+#   LINK(macOS)  = ...               # Options applying only to
+#                                    # System.os=="macOS" (use with any OS and
+#                                    # any comment directive)
+#   LINK_LIBS    = true              # Links following LIBRARIES with this Build
+#                                    # file (otherwise just installs them)
+#   LINK_LIBS    = false             # Linking turned off for following
+#                                    # LIBRARIES - info can still be obtained
+#                                    # from $LIBRARY_FLAGS or $LIBRARIES(libname,...)
 #   LIBRARIES    = libalpha
 #   LIBRARIES    = libbeta(library-name)
 #   LIBRARIES    = libfreetype6-dev(freetype2)
 #   DEPENDENCIES = Library/Rogue/**/*.rogue
 #
 #   LIBRARIES    = name(package)
-#   LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags> which:<which-name>)
+#   LIBRARIES    = name(package:<package> install:<install-cmd>
+#                  link:<link-flags> which:<which-name>)
 #
-# The following macro is replaced within this file (Build.rogue) - the libraries should also be declared in #$ LIBRARIES:
+# The following macro is replaced within this file (Build.rogue) - the libraries
+# should normally also be declared in #$ LIBRARIES:
 #
 #   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
 #     ->
@@ -111,9 +131,9 @@ routine description( command:String, text:String )
   Build.rogo_descriptions[ command ] = text
 endRoutine
 
-routine help( command:String, description=null:String, syntax=null:String )
-  if (description) Global.description( command, description )
-  if (syntax)      Global.syntax( command, syntax )
+routine help( command:String, description_text=null:String, syntax_text=null:String )
+  if (description_text) description( command, description_text )
+  if (syntax_text)      syntax( command, syntax_text )
 endRoutine
 
 try
@@ -125,14 +145,14 @@ endTry
 
 class Build [singleton]
   PROPERTIES
-    rogo_syntax         = StringTable<<String>>()
-    rogo_descriptions   = StringTable<<String>>()
-    rogo_prefix         = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+    rogo_syntax         = [String:String]
+    rogo_descriptions   = [String:String]
+    rogo_prefix         = "rogo_"
     rogo_command        = "default"
     rogo_args           = @[]
     rogo_error          : Error
 
-    LOCAL_DEFS_FILE     = "Local.mk"
+    LOCAL_SETTINGS_FILE = "Local.settings"
 
   METHODS
     method launch
@@ -144,27 +164,27 @@ class Build [singleton]
 
     method dispatch_command
       local m = find_command( rogo_command )
-      require m || "no such routine rogo_$()" (rogo_command)
+      if (not m) throw Error( "No such routine rogo_$()" (rogo_command) )
 
       local args = @[]
       forEach (arg in rogo_args)
         which (arg)
           case "true":  args.add( true )
           case "false": args.add( false )
-          case "null":  args.add( NullValue )
+          case "null":  args.add( null )
           others:       args.add( arg )
         endWhich
       endForEach
-      if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
       m( args )
 
     method find_command( name:String )->MethodInfo
-      return <<Global>>.find_global_method( rogo_prefix + name )
+      return <<Routine>>.find_global_method( rogo_prefix + name )
 
     method on_error
-      Console.error.println "=" * 79
+      local w = Console.width.or_smaller( 80 )
+      Console.error.println "=" * w
       Console.error.println rogo_error
-      Console.error.println "=" * 79
+      Console.error.println "=" * w
       on_exit
       System.exit 1
 
@@ -172,9 +192,10 @@ class Build [singleton]
       noAction
 
     method on_command_not_found
-      println "=" * 79
+      local w = Console.width.or_smaller( 80 )
+      println "=" * w
       println "ERROR: No such command '$'." (rogo_args.first)
-      println "=" * 79
+      println "=" * w
       println
       rogo_command = "help"
       rogo_args.clear
@@ -194,7 +215,7 @@ class Build [singleton]
           rogo_args.clear
 
           while (parts.count)
-            local cmd = _join( parts )
+            local cmd = parts.join("_")
             if (find_command(cmd))
               rogo_command = cmd
               on_command_found
@@ -211,12 +232,12 @@ class Build [singleton]
       endBlock
 
     method read_defs
-      read_defs( LOCAL_DEFS_FILE )
+      read_defs( LOCAL_SETTINGS_FILE )
 
     method read_defs( defs_filepath:String )
-      # Attempt to read defs from Local.mk
+      # Attempt to read defs from Local.settings
       local overrides = String[]
-      if (File.exists(defs_filepath))
+      if (File(defs_filepath).exists)
         forEach (line in LineReader(File(defs_filepath)))
           if (line.contains("="))
             local name  = line.before_first('=').trimmed
@@ -227,7 +248,7 @@ class Build [singleton]
             local p = <<Build>>.find_property( name )
             if (p)
               overrides.add( "$ = $" (name,value) )
-              <<Build>>.set_property( this, p, Value(value) )
+              p.set_value( this, value )
             endIf
           endIf
         endForEach
@@ -241,6 +262,8 @@ endClass
 
 
 routine rogo_help( command="":String )
+  # SYNTAX: rogo help [command]
+  # Displays help for a specified command or else all build commands.
   command = Build._join( Build.rogo_args )
   if (command.count)
     local syntax = get_syntax( command )
@@ -253,9 +276,11 @@ routine rogo_help( command="":String )
     endIf
     local description = get_description( command )
     if (description)
+      local max_w = Console.width - 2
       println "DESCRIPTION"
-      forEach (line in LineReader(description.word_wrapped(76)))
-        print( "  " ).println( line )
+      forEach (line in LineReader(description.word_wrapped(max_w)))
+        print( "  " )
+        println( line )
       endForEach
       println
       success = true
@@ -263,34 +288,60 @@ routine rogo_help( command="":String )
     if (success)
       return
     else
-      println "=" * 79
+      local w = Console.width.or_smaller( 80 )
+      println "=" * w
       println "ERROR: No such command '$'." (command)
-      println "=" * 79
+      println "=" * w
       println
     endIf
   endIf
 
   println "USAGE"
-  local lines = String[]
-  forEach (m in <<Global>>.global_methods)
+  local entries = CommandInfo[]
+  local max_len = 0
+  forEach (m in <<Routine>>.global_methods)
     if (m.name.begins_with(Build.rogo_prefix))
-      lines.add( "  " + get_syntax(m.name.after_first(Build.rogo_prefix)) )
+      local name = m.name.after_first( Build.rogo_prefix )
+      local entry = CommandInfo( name, get_syntax(name), get_description(name) )
+      max_len .= or_larger( entry.syntax.count )
+      entries.add entry
     endIf
   endForEach
-  lines.sort( (a,b)=>(a<b) )
-  println (forEach in lines)
+
+  entries.sort( $1.name < $2.name )
+  max_len += 2
+
+  local max_w = Console.width
+  forEach (entry in entries)
+    print "  " + entry.syntax
+    if (entry.@description)
+      local description = entry.@description
+      loop (max_len - entry.syntax.count) print ' '
+      contingent
+        sufficient (max_len + description.count <= max_w)
+        if (description.contains(". "))
+          description = description.before_first( ". " ) + "."
+          sufficient (max_len + description.count <= max_w)
+        endIf
+        necessary (max_len + 10 <= max_w)
+        description = description.unright( (description.count - (max_w - max_len))+3 ) + "..."
+      satisfied
+        print description
+      endContingent
+    endIf
+    println
+  endForEach
   println
 endRoutine
-
 
 routine get_syntax( m_name:String )->String
   if (Build.rogo_syntax.contains(m_name))
     return "rogo " + Build.rogo_syntax[ m_name ]
   else
-    local m = <<Global>>.find_global_method( Build.rogo_prefix + m_name )
+    local m = <<Routine>>.find_global_method( Build.rogo_prefix + m_name )
     if (not m) return null
     local line = "rogo $" (m_name.replacing('_',' '))
-    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+    line += " <$>" ((forEach in m.parameters).name)
     return line
   endIf
 endRoutine
@@ -303,3 +354,5 @@ routine get_description( m_name:String )->String
     return null
   endIf
 endRoutine
+
+class CommandInfo( name:String, syntax:String, description:String );
